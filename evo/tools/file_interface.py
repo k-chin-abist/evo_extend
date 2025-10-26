@@ -29,9 +29,21 @@ import zipfile
 from pathlib import Path
 
 import numpy as np
-from rosbags.rosbag1 import Reader as Rosbag1Reader, Writer as Rosbag1Writer
-from rosbags.rosbag2 import Reader as Rosbag2Reader, Writer as Rosbag2Writer
-from rosbags.typesys import get_typestore, Stores
+try:
+    from rosbags.rosbag1 import Reader as Rosbag1Reader, Writer as Rosbag1Writer
+    from rosbags.rosbag2 import Reader as Rosbag2Reader, Writer as Rosbag2Writer
+    from rosbags.typesys import get_typestore, Stores
+    ROSBAGS_AVAILABLE = True
+except ImportError:
+    print("WARNING: rosbags not available. ROS bag file support disabled.")
+    ROSBAGS_AVAILABLE = False
+    # Create dummy classes
+    class Rosbag1Reader: pass
+    class Rosbag1Writer: pass
+    class Rosbag2Reader: pass
+    class Rosbag2Writer: pass
+    def get_typestore(): return None
+    Stores = None
 
 from evo import EvoException
 import evo.core.lie_algebra as lie

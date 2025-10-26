@@ -21,8 +21,17 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import enum
 import re
 
-from rosbags.rosbag1.reader import Reader as Rosbag1Reader
-from rosbags.rosbag2.reader import Reader as Rosbag2Reader
+try:
+    from rosbags.rosbag1.reader import Reader as Rosbag1Reader
+    ROSBAGS_AVAILABLE = True
+except ImportError:
+    print("WARNING: rosbags not available in tf_id module.")
+    ROSBAGS_AVAILABLE = False
+    class Rosbag1Reader: pass
+try:
+    from rosbags.rosbag2.reader import Reader as Rosbag2Reader
+except ImportError:
+    class Rosbag2Reader: pass
 
 from evo import EvoException
 

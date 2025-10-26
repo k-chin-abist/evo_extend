@@ -23,7 +23,31 @@ import logging
 import typing
 from pathlib import Path
 
-from colorama import Fore
+try:
+    from colorama import Fore
+    COLORAMA_AVAILABLE = True
+except ImportError:
+    print("WARNING: colorama not available. Colored output disabled.")
+    COLORAMA_AVAILABLE = False
+    # Create dummy Fore class
+    class Fore:
+        RED = ""
+        GREEN = ""
+        YELLOW = ""
+        BLUE = ""
+        MAGENTA = ""
+        CYAN = ""
+        WHITE = ""
+        RESET = ""
+        LIGHTYELLOW_EX = ""
+        LIGHTRED_EX = ""
+        LIGHTGREEN_EX = ""
+        LIGHTBLUE_EX = ""
+        LIGHTMAGENTA_EX = ""
+        LIGHTCYAN_EX = ""
+        LIGHTWHITE_EX = ""
+        BLACK = ""
+        LIGHTBLACK_EX = ""
 
 from evo import EvoException, __version__
 

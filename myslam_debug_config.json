@@ -1,0 +1,12 @@
+{
+  "linear_velocity": 0.5,
+  "amplitude_y": 0.2,
+  "frequency_y": 0.1,
+  "drift_rate": 0.01,
+  "noise_level": 0.05,
+  "frame_rate": 10.0,
+  "enable_drift": true,
+  "enable_noise": true,
+  "show_images": true,
+  "save_images": true
+}

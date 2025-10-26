@@ -1,252 +1,267 @@
-# evo 
+# EVO Extend - SLAM Evaluation Framework
 
-***Python package for the evaluation of odometry and SLAM***
+A comprehensive SLAM evaluation framework built on top of [EVO](https://github.com/MichaelGrupp/evo) with automated evaluation pipeline, dataset readers, and SLAM system interfaces.
 
-| Linux / macOS / Windows / ROS / ROS2 |
-| :---: |
-| [![CI](https://github.com/MichaelGrupp/evo/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/MichaelGrupp/evo/actions/workflows/ci.yml) |
+## 📋 Table of Contents
 
-This package provides executables and a small library for handling, evaluating and comparing the trajectory output of odometry and SLAM algorithms.
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Dataset Support](#dataset-support)
+- [SLAM Implementation](#slam-implementation)
+- [Evaluation & Visualization](#evaluation--visualization)
+- [Project Structure](#project-structure)
 
-Supported trajectory formats:
+## ✨ Features
 
-* 'TUM' trajectory files
-* 'KITTI' pose files
-* 'EuRoC MAV' (.csv groundtruth and TUM trajectory file)
-* ROS and ROS2 bagfile with `geometry_msgs/PoseStamped`, `geometry_msgs/TransformStamped`, `geometry_msgs/PoseWithCovarianceStamped`, `geometry_msgs/PointStamped` or `nav_msgs/Odometry` topics or [TF messages](https://github.com/MichaelGrupp/evo/wiki/Formats#bag---ros-bagfile)
+- **Automated SLAM Evaluation**: Run your SLAM system on standard datasets and automatically evaluate against ground truth
+- **Universal SLAM Interface**: Easy-to-implement interface for any SLAM system
+- **Multiple Dataset Support**: KITTI, TUM RGB-D, EuRoC MAV
+- **Comprehensive Metrics**: APE (Absolute Pose Error) and RPE (Relative Pose Error) evaluation
+- **High-Performance Readers**: Python and C++ dataset readers
 
-See [here](https://github.com/MichaelGrupp/evo/wiki/Formats) for more infos about the formats.
+## 🚀 Installation
 
-<a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_map.png" target="_blank">
-  <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_map.png" alt="evo" height="175" border="5" />
-</a>
-<a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_violin.png" target="_blank">
-  <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_violin.png" alt="evo" height="175" border="5" />
-</a>
-<a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/markers.png" target="_blank">
-  <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/markers.png" alt="evo" height="175" border="5" />
-</a>
-<a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/map_tile_osm.png" target="_blank">
-  <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/map_tile_osm.png" alt="evo" height="175" border="5" />
-</a>
+### Prerequisites
 
----
+- Python >= 3.10
+- CMake >= 3.10 (for C++ components, optional)
+- C++ compiler (gcc, clang, or MSVC) - optional
 
-## Why?
+### Install
 
-evo has several advantages over other public benchmarking tools:
-
-* common tools for different formats
-* algorithmic options for association, alignment, scale adjustment for monocular SLAM etc.
-* flexible options for output, [plotting](https://github.com/MichaelGrupp/evo/wiki/Plotting), [visualization](https://github.com/MichaelGrupp/evo/wiki/Rerun-integration) or export (e.g. LaTeX plots or Excel tables)
-* a powerful, configurable CLI that can cover many use cases
-* modular `core` and `tools` libraries for custom extensions
-* faster than other established Python-based tools ([see here](https://github.com/MichaelGrupp/evo/blob/master/doc/performance.md))
-
-**What it's not:** a 1-to-1 re-implementation of a particular evaluation protocol tailored to a specific dataset. 
-
----
-
-## Installation / Upgrade
-
-Installation is easy-peasy if you're familiar with this: https://xkcd.com/1987/#
-
-The latest version of evo supports **Python 3.10+**.
-You might also want to use a [virtual environment](https://github.com/MichaelGrupp/evo/blob/master/doc/install_in_virtualenv.md).
-
-### From PyPi
-If you just want to use the executables of the latest release version, the easiest way is to run:
 ```bash
-pip install evo
+# Clone the repository
+git clone <repository-url>
+cd evo_extend
+
+# Install dependencies
+pip install -e .
+
+# Optional: Install with additional features
+pip install -e .[gui,geo,rerun,ros]
 ```
-This will download the package and its dependencies from [PyPI](https://pypi.org/project/evo/) and install or upgrade them. If you want, you can subscribe to new releases via https://libraries.io/pypi/evo.
 
-To upgrade to a newer version: `pip install --upgrade evo`
+## ⚡ Quick Start
 
-### From Source
-Run this in the repository's base folder:
+### 1. Configure Datasets
+
 ```bash
-pip install --editable .
+# Set dataset root directories
+python evo/tools/dataset_config.py --set-root kitti /path/to/kitti/dataset
+python evo/tools/dataset_config.py --set-root tum /path/to/tum/dataset
+python evo/tools/dataset_config.py --set-root euroc /path/to/euroc/dataset
 ```
 
-### Tab completion
+### 2. Implement Your SLAM
 
-Tab completion is supported via the [argcomplete](https://github.com/kislyuk/argcomplete/) package. Run `activate-global-python-argcomplete` after the installation to use it.
+Create a SLAM class inheriting from `SLAMSystem`:
 
-### Dependencies
+```python
+from evo.core.slam_interface import SLAMSystem
+import numpy as np
 
-**Python packages**
-
-evo has some required dependencies that are ***automatically resolved*** during installation with pip.
-See the `pyproject.toml` file for all details.
-
-**PyQt6 (optional)**
-
-[PyQt6](https://pypi.org/project/PyQt6/) will give you the enhanced GUI for plot figures from the "*qtagg*" matplotlib backend (otherwise: "*TkAgg*"). If PyQt6 is already installed when installing this package, it will be used as a default (see `evo_config show`). To change the plot backend afterwards, run `evo_config set plot_backend qtagg`.
-
-If you run into issues with installing tkinter, trying PyQt6 is a good idea. 
-
-**ROS (optional)**
-
-Some ROS-related features require a ROS installation, see [here](http://www.ros.org/). We are testing this package with ROS Kilted.
-
-> Reading ROS bag files works also without a ROS installation thanks to the great [rosbags](https://pypi.org/project/rosbags/) package that is installed together with evo. This allows you also to read ROS 1 & 2 bags even if you don't have one of those ROS distros installed. (except for reading `/tf` topics, because there we need the buffer implementation from ROS)
-
-**contextily (optional)**
-
-[contextily](https://contextily.readthedocs.io/en/latest/index.html) is required for [adding map tiles](https://github.com/MichaelGrupp/evo/wiki/Plotting#geographic-map-tiles) to plots of geo-referenced data.
-
-**Rerun (optional)**
-
-You can log data also to the [rerun](https://rerun.io/) viewer. See the related [Wiki page](https://github.com/MichaelGrupp/evo/wiki/Rerun-integration) for more details.
-
----
-
-## Command Line Interface
-
-After installation with pip, the following executables can be called globally from your command-line:
-
-**Metrics:**
-
-* `evo_ape` - absolute pose error
-* `evo_rpe` - relative pose error
-
-**Tools:**
-
-* `evo_traj` - tool for analyzing, plotting or exporting one or more trajectories
-* `evo_res` - tool for comparing one or multiple result files from `evo_ape` or `evo_rpe`
-* `evo_config` - tool for global settings and config file manipulation
-
-Call the commands with `--help` to see the options, e.g. `evo_ape --help`. Tab-completion of command line parameters is available on UNIX-like systems.
-
-**More documentation**
-Check out the [Wiki on GitHub](https://github.com/MichaelGrupp/evo/wiki).
-
----
-
-## Example Workflow
-
-There are some example trajectories in the source folder in `test/data`.
-
-
-### 1.) Plot multiple trajectories
-
-  Here, we plot two KITTI pose files and the ground truth using `evo_traj`:
-  ```
-  cd test/data
-  evo_traj kitti KITTI_00_ORB.txt KITTI_00_SPTAM.txt --ref=KITTI_00_gt.txt -p --plot_mode=xz
-  ```
-
-  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/traj_demo.png" target="_blank">
-    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/traj_demo.png" alt="evo" height="200" border="5" />
-  </a>
-  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/traj_demo_xyz.png" target="_blank">
-    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/traj_demo_xyz.png" alt="evo" height="200" border="5" />
-  </a>
-
-### 2.) Run a metric on trajectories
-
-  For example, here we calculate the absolute pose error for two trajectories from ORB-SLAM and S-PTAM using `evo_ape` (`KITTI_00_gt.txt` is the reference (ground truth)) and plot and save the individual results to .zip files for `evo_res`:
-
-  *First trajectory (ORB Stereo):*
-
-  ```
-  mkdir results
-  evo_ape kitti KITTI_00_gt.txt KITTI_00_ORB.txt -va --plot --plot_mode xz --save_results results/ORB.zip
-  ```
-
-  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_raw.png" target="_blank">
-    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_raw.png" alt="evo" height="200" border="5" />
-  </a>
-  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_map.png" target="_blank">
-    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_map.png" alt="evo" height="200" border="5" />
-  </a>
-
-  *Second trajectory (S-PTAM):*
-  
-  ```
-  evo_ape kitti KITTI_00_gt.txt KITTI_00_SPTAM.txt -va --plot --plot_mode xz --save_results results/SPTAM.zip
-  ```
-
-  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_S-PTAM_raw.png" target="_blank">
-    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_S-PTAM_raw.png" alt="evo" height="200" border="5" />
-  </a>
-  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_S-PTAM_map.png" target="_blank">
-    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_S-PTAM_map.png" alt="evo" height="200" border="5" />
-  </a>
-
-
-### 3.) Process multiple results from a metric
-
-  `evo_res` can be used to compare multiple result files from the metrics, i.e.:
-  * print infos and statistics (default)
-  * plot the results
-  * save the statistics in a table
-
-  Here, we use the results from above to generate a plot and a table:
-  ```
-  evo_res results/*.zip -p --save_table results/table.csv
-  ```
-
-  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_raw.png" target="_blank">
-    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_raw.png" alt="evo" height="200" border="5" />
-  </a>
-  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_dist.png" target="_blank">
-    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_dist.png" alt="evo" height="200" border="5" />
-  </a>
-  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_stats.png" target="_blank">
-    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_stats.png" alt="evo" height="200" border="5" />
-  </a>
-  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_box.png" target="_blank">
-    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_box.png" alt="evo" height="200" border="5" />
-  </a>
-  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_violin.png" target="_blank">
-    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_violin.png" alt="evo" height="200" border="5" />
-  </a>
-
----
-
-## IPython / Jupyter Resources
-
-For an interactive source code documentation, open the [Jupyter notebook](http://jupyter.readthedocs.io/en/latest/install.html) `metrics_tutorial.ipynb` in the `notebooks` folder of the repository. More infos on Jupyter notebooks: see [here](https://github.com/MichaelGrupp/evo/blob/master/doc/jupyter_notebook.md)
-
-If you have IPython installed, you can launch an IPython shell with a custom evo profile with the command `evo_ipython`.
-
----
-
-## Contributing Utilities
-
-A few "inoffical" scripts for special use-cases are collected  in the `contrib/` directory of the repository. They are inofficial in the sense that they don't ship with the package distribution and thus aren't regularly tested in continuous integration.
-
----
-
-## Trouble
-*"😱, this piece of 💩 software doesn't do what I want!!1!1!!"*
-
-**First aid:**
-* append `-h`/ `--help` to your command
-* check the [Wiki](https://github.com/MichaelGrupp/evo/wiki)
-* check the [previous issues](https://github.com/MichaelGrupp/evo/issues?q=is%3Aissue+is%3Aclosed)
-* open a [new issue](https://github.com/MichaelGrupp/evo/issues)
-
----
-
-## Contributing
-
-Patches are welcome, preferably as pull requests.
-
-## License
-
-[GPL-3.0 or later](https://www.gnu.org/licenses/gpl-3.0.html)
-
-If you use this package for your research, a footnote with the link to this repository is appreciated: `github.com/MichaelGrupp/evo`.
-
-...or, for citation with BibTeX:
+class MySLAM(SLAMSystem):
+    def __init__(self, config_file: str = None):
+        super().__init__(config_file)
+        self.timestamps = []
+        self.poses = []
+    
+    def initialize(self):
+        print("Initializing SLAM...")
+        self.is_initialized = True
+    
+    def process_frame(self, timestamp, rgb_image=None, depth_image=None,
+                      left_image=None, right_image=None) -> bool:
+        # Your SLAM processing logic
+        pose = self.estimate_pose(rgb_image, depth_image)
+        self.timestamps.append(timestamp)
+        self.poses.append(pose)
+        return True
+    
+    def get_trajectory(self):
+        return self.timestamps, self.poses
+    
+    def shutdown(self):
+        print("SLAM complete")
 ```
-@misc{grupp2017evo,
-  title={evo: Python package for the evaluation of odometry and SLAM.},
-  author={Grupp, Michael},
-  howpublished={\url{https://github.com/MichaelGrupp/evo}},
-  year={2017}
-}
+
+### 3. Run Evaluation
+
+```bash
+# Evaluate with plotting
+python evo/core/eval.py --slam myslam.MySLAM --dataset kitti --seq 00 --plot
+
+# Evaluate on TUM dataset
+python evo/core/eval.py --slam myslam.MySLAM --dataset tum --seq rgbd_dataset_freiburg2_xyz
+
+# Evaluate on EuRoC dataset
+python evo/core/eval.py --slam myslam.MySLAM --dataset euroc --seq MH_01_easy
 ```
+
+## 📊 Dataset Support
+
+### Expected Directory Structures
+
+#### KITTI Dataset
+```
+kitti/dataset/sequences/00/
+├── image_0/          # Left stereo images
+├── image_1/          # Right stereo images
+└── times.txt         # Timestamps
+kitti/dataset/poses/00.txt  # Ground truth
+```
+
+#### TUM RGB-D Dataset
+```
+tum/rgbd_dataset_freiburg2_xyz/
+├── rgb.txt           # RGB file list
+├── depth.txt         # Depth file list
+├── groundtruth.txt   # GT poses
+├── rgb/             # RGB images
+└── depth/           # Depth images
+```
+
+#### EuRoC MAV Dataset
+```
+euroc/MH_01_easy/mav0/
+├── cam0/data/                # Camera images
+├── cam0/data.csv             # Image timestamps
+├── imu0/data.csv             # IMU data
+└── state_groundtruth_estimate0/data.csv  # GT poses
+```
+
+### Dataset Readers
+
+**Python API** (`evo/tools/dataset_read.py`):
+```python
+from evo.tools.dataset_read import KITTIDataset, TUMDataset, EuRoCDataset
+
+# KITTI
+kitti = KITTIDataset(sequence="00")
+left_imgs = kitti.get_left_images()
+right_imgs = kitti.get_right_images()
+timestamps, poses = kitti.read_poses()
+
+# TUM RGB-D
+tum = TUMDataset(sequence="rgbd_dataset_freiburg2_xyz")
+rgb_imgs = tum.get_rgb_images()
+depth_imgs = tum.get_depth_images()
+timestamps, poses = tum.read_poses()
+
+# EuRoC
+euroc = EuRoCDataset(sequence="MH_01_easy")
+images = euroc.get_images()
+imu = euroc.get_imu_data()
+timestamps, poses = euroc.read_poses()
+```
+
+## 🔧 SLAM Implementation
+
+### Required Methods
+
+- `__init__(self, config_file)`: Initialize SLAM
+- `initialize()`: Called before first frame
+- `process_frame(timestamp, rgb_image, depth_image, left_image, right_image)`: Process one frame
+- `get_trajectory()`: Return (timestamps, poses)
+- `shutdown()`: Called after last frame
+
+### Examples
+
+See `myslam.py` for:
+- **MySLAM**: Basic test SLAM with configurable trajectory
+- **MySLAMAdvanced**: Advanced SLAM with feature tracking simulation
+
+## 📈 Evaluation & Visualization
+
+### Metrics
+
+- **APE (Absolute Pose Error)**: Overall trajectory error
+- **RPE (Relative Pose Error)**: Local relative error
+
+### Command-Line Usage
+
+```bash
+# Basic evaluation with plots
+python evo/core/eval.py --slam myslam.MySLAM --dataset kitti --seq 00 --plot
+
+# Limit frames for testing
+python evo/core/eval.py --slam myslam.MySLAM --dataset kitti --seq 00 --max-frames 100 --plot
+
+# Custom configuration
+python evo/core/eval.py --slam myslam.MySLAM --dataset kitti --seq 00 --config config.json --plot
+```
+
+### Output Structure
+
+```
+results/MySLAM_kitti_00_timestamp/
+├── trajectory.txt         # Estimated trajectory
+├── results.json          # Evaluation results
+├── ape_result.zip        # APE details
+└── rpe_result.zip        # RPE details
+```
+
+### Plot Types
+
+#### 1. Trajectory Plot (3D/2D)
+**Shows**: Ground truth vs. estimated trajectory  
+**Read**: Blue = GT, Red = Estimated, Arrows = orientation  
+**Generate**: `--plot` flag with trajectory comparison
+
+#### 2. APE Plot
+**Shows**: Absolute error over time  
+**Read**: Y-axis = error magnitude (m/rad), Color = error intensity  
+**Stats**: RMSE, mean, median, std shown in legend
+
+#### 3. RPE Plot
+**Shows**: Relative error between consecutive poses  
+**Read**: Local accuracy per delta distance/time
+
+#### 4. Error Distribution
+**Shows**: Histogram of error magnitudes  
+**Read**: Distribution shape indicates error consistency
+
+### Trajectory Format Conversion
+
+```bash
+# Convert between formats
+evo_traj tum trajectory.txt --save_as_kitti trajectory_kitti.txt
+evo_traj kitti trajectory_kitti.txt --save_as_tum trajectory_tum.txt
+evo_traj tum trajectory.txt --save_as_euroc trajectory_euroc.csv
+
+# Convert with plotting
+evo_traj tum est.txt --save_as_kitti est_kitti.txt -p
+```
+
+**Formats**:
+- **TUM**: `timestamp tx ty tz qx qy qz qw`
+- **KITTI**: `3x4 transformation matrix`
+- **EuRoC**: `CSV with timestamp, position, quaternion`
+
+## 🏗️ Project Structure
+
+```
+evo_extend/
+├── evo/                      # Main package
+│   ├── core/
+│   │   ├── eval.py          # Main evaluation script
+│   │   └── slam_interface.py # SLAM interface
+│   └── tools/
+│       ├── dataset_read.py  # Python dataset readers
+│       └── dataset_config.py # Dataset config
+├── cpp/                      # C++ components
+│   ├── src/                 # C++ dataset readers
+│   └── test/                # C++ tests
+├── myslam.py                # Example SLAM implementations
+└── test_myslam.py           # SLAM tests
+```
+
+## 📄 License
+
+This project is licensed under the GNU General Public License v3 (GPLv3).
+
+## 🙏 Acknowledgments
+
+- Built on [EVO](https://github.com/MichaelGrupp/evo) by Michael Grupp
+- Dataset formats from KITTI, TUM, and EuRoC

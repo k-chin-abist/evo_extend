@@ -58,12 +58,14 @@ dependencies = [
     "pillow",
     "rosbags>=0.11.0",
     "packaging",
+    "opencv-python",
 ]
 
 [project.optional-dependencies]
 gui = ["PyQt6"]
 geo = ["contextily"]
 rerun = ["rerun-sdk>=0.24.0"]
+ros = ["tf2-pyz>=20230621.0", "geometry-msgs"]
 
 
 [project.scripts]

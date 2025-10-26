@@ -22,13 +22,25 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import sys
 
-import colorama
-from colorama import Fore
+try:
+    import colorama
+    COLORAMA_AVAILABLE = True
+except ImportError:
+    print("WARNING: colorama not available in log module.")
+    COLORAMA_AVAILABLE = False
+    colorama = None
+
+try:
+    from colorama import Fore
+except ImportError:
+    # Use dummy Fore class from settings
+    from evo.tools.settings import Fore
 
 from evo.tools.settings import SETTINGS, GLOBAL_LOGFILE_PATH
 from evo.tools._typing import PathStr
 
-colorama.init()
+if COLORAMA_AVAILABLE:
+    colorama.init()
 
 CONSOLE_ERROR_FMT = (
     f"{Fore.LIGHTRED_EX}[%(levelname)s]{Fore.RESET} %(message)s"
