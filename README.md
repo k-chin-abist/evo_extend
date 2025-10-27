@@ -32,7 +32,7 @@ A comprehensive SLAM evaluation framework built on top of [EVO](https://github.c
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/k-chin-abist/evo_extend
 cd evo_extend
 
 # Install dependencies
