@@ -92,7 +92,8 @@ class MySLAM(SLAMSystem):
                      rgb_image: Optional[np.ndarray] = None,
                      depth_image: Optional[np.ndarray] = None,
                      left_image: Optional[np.ndarray] = None,
-                     right_image: Optional[np.ndarray] = None) -> bool:
+                     right_image: Optional[np.ndarray] = None,
+                     calib_data: Optional[dict] = None) -> bool:
         """
         Process one frame
         
@@ -102,6 +103,7 @@ class MySLAM(SLAMSystem):
             depth_image: Depth image (for RGB-D SLAM)
             left_image: Left stereo image
             right_image: Right stereo image
+            calib_data: Camera calibration data (optional)
             
         Returns:
             True if processing successful
@@ -273,7 +275,12 @@ class MySLAMAdvanced(SLAMSystem):
         self.current_pose = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0])
         print("MySLAMAdvanced: Feature tracker initialized")
     
-    def process_frame(self, timestamp: float, **kwargs) -> bool:
+    def process_frame(self, timestamp: float, 
+                     rgb_image: Optional[np.ndarray] = None,
+                     depth_image: Optional[np.ndarray] = None,
+                     left_image: Optional[np.ndarray] = None,
+                     right_image: Optional[np.ndarray] = None,
+                     calib_data: Optional[dict] = None, **kwargs) -> bool:
         """Process frame with advanced SLAM simulation"""
         if not self.is_initialized:
             return False

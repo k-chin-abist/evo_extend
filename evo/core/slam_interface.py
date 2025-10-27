@@ -36,7 +36,8 @@ class SLAMSystem:
                      rgb_image: np.ndarray = None,
                      depth_image: np.ndarray = None,
                      left_image: np.ndarray = None,
-                     right_image: np.ndarray = None) -> bool:
+                     right_image: np.ndarray = None,
+                     calib_data: dict = None) -> bool:
         """
         Process one frame
         
@@ -46,6 +47,7 @@ class SLAMSystem:
             depth_image: Depth image (H, W)
             left_image: Left camera image (H, W) or (H, W, 3)
             right_image: Right camera image (H, W) or (H, W, 3)
+            calib_data: Camera calibration data (intrinsics, extrinsics, etc.)
             
         Returns:
             Whether processing was successful
